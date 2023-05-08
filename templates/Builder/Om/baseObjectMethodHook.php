@@ -130,4 +130,37 @@
         <?php endif?>
     }
 
+<?php endif?>
+<?php if ($preChange) :?>
+    /**
+    * Code to be run before persisting or deleting the object in database
+    * @param ConnectionInterface|null $con
+    * @return bool
+    */
+    public function preChange(?ConnectionInterface $con = null): bool
+    {
+    <?php if ($hasBaseClass) : ?>
+        if (is_callable('parent::preChange')) {
+        return parent::preChange($con);
+        }
+    <?php endif?>
+    return true;
+    }
+
+<?php endif?>
+<?php if ($postChange) :?>
+    /**
+     * Code to be run after persisting or deleting the object in database
+     * @param ConnectionInterface|null $con
+     * @return void
+     */
+    public function postChange(?ConnectionInterface $con = null): void
+    {
+        <?php if ($hasBaseClass) : ?>
+        if (is_callable('parent::postChange')) {
+            parent::postChange($con);
+        }
+        <?php endif?>
+    }
+
 <?php endif;

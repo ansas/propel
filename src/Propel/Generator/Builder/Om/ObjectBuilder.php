@@ -752,7 +752,7 @@ abstract class " . $this->getUnqualifiedClassName() . $parentClass . ' implement
     {
         $hooks = [];
         foreach (['pre', 'post'] as $hook) {
-            foreach (['Insert', 'Update', 'Save', 'Delete'] as $action) {
+            foreach (['Insert', 'Update', 'Save', 'Delete', 'Change'] as $action) {
                 $hooks[$hook . $action] = strpos($script, 'function ' . $hook . $action . '(') === false;
             }
         }
@@ -3597,13 +3597,14 @@ abstract class " . $this->getUnqualifiedClassName() . $parentClass . ' implement
                 ->filterByPrimaryKey(\$this->getPrimaryKey());";
         if ($this->getBuildProperty('generator.objectModel.addHooks')) {
             $script .= "
-            \$ret = \$this->preDelete(\$con);";
+            \$ret = \$this->preDelete(\$con) && \$this->preChange(\$con);";
             // apply behaviors
             $this->applyBehaviorModifier('preDelete', $script, '            ');
             $script .= "
             if (\$ret) {
                 \$deleteQuery->delete(\$con);
-                \$this->postDelete(\$con);";
+                \$this->postDelete(\$con);
+                \$this->postChange(\$con);";
             // apply behaviors
             $this->applyBehaviorModifier('postDelete', $script, '                ');
             $script .= "
@@ -6862,7 +6863,7 @@ abstract class " . $this->getUnqualifiedClassName() . $parentClass . ' implement
         if ($this->getBuildProperty('generator.objectModel.addHooks')) {
             // save with runtime hooks
             $script .= "
-            \$ret = \$this->preSave(\$con);
+            \$ret = \$this->preSave(\$con) && \$this->preChange(\$con);
             \$isInsert = \$this->isNew();";
             $this->applyBehaviorModifier('preSave', $script, '            ');
             $script .= "
@@ -6886,7 +6887,8 @@ abstract class " . $this->getUnqualifiedClassName() . $parentClass . ' implement
             $this->applyBehaviorModifier('postUpdate', $script, '                    ');
             $script .= "
                 }
-                \$this->postSave(\$con);";
+                \$this->postSave(\$con);
+                \$this->postChange(\$con);";
             $this->applyBehaviorModifier('postSave', $script, '                ');
             $script .= "
                 " . $this->getTableMapClassName() . "::addInstanceToPool(\$this);
