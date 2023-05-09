@@ -3597,14 +3597,14 @@ abstract class " . $this->getUnqualifiedClassName() . $parentClass . ' implement
                 ->filterByPrimaryKey(\$this->getPrimaryKey());";
         if ($this->getBuildProperty('generator.objectModel.addHooks')) {
             $script .= "
-            \$ret = \$this->preDelete(\$con) && \$this->preChange(\$con);";
+            \$ret = \$this->preChange(\$con) && \$this->preDelete(\$con);";
             // apply behaviors
             $this->applyBehaviorModifier('preDelete', $script, '            ');
             $script .= "
             if (\$ret) {
                 \$deleteQuery->delete(\$con);
                 \$this->postDelete(\$con);
-                \$this->postChange(\$con);";
+                \$this->postChange(\$con, true);";
             // apply behaviors
             $this->applyBehaviorModifier('postDelete', $script, '                ');
             $script .= "
@@ -6863,7 +6863,7 @@ abstract class " . $this->getUnqualifiedClassName() . $parentClass . ' implement
         if ($this->getBuildProperty('generator.objectModel.addHooks')) {
             // save with runtime hooks
             $script .= "
-            \$ret = \$this->preSave(\$con) && \$this->preChange(\$con);
+            \$ret = \$this->preChange(\$con) && \$this->preSave(\$con);
             \$isInsert = \$this->isNew();";
             $this->applyBehaviorModifier('preSave', $script, '            ');
             $script .= "
@@ -6888,7 +6888,7 @@ abstract class " . $this->getUnqualifiedClassName() . $parentClass . ' implement
             $script .= "
                 }
                 \$this->postSave(\$con);
-                \$this->postChange(\$con);";
+                \$this->postChange(\$con, \$affectedRows > 0);";
             $this->applyBehaviorModifier('postSave', $script, '                ');
             $script .= "
                 " . $this->getTableMapClassName() . "::addInstanceToPool(\$this);
