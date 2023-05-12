@@ -24,11 +24,12 @@ class TimestampableBehavior extends Behavior
      * @var array<string, mixed>
      */
     protected $parameters = [
-        'create_column'      => 'created_at',
-        'update_column'      => 'updated_at',
-        'disable_created_at' => 'false',
-        'disable_updated_at' => 'false',
-        'date_type'          => 'DATETIME',
+        'create_column'         => 'created_at',
+        'update_column'         => 'updated_at',
+        'disable_created_at'    => 'false',
+        'disable_updated_at'    => 'false',
+        'enable_high_precision' => 'false',
+        'date_type'             => 'DATETIME',
     ];
 
     /**
@@ -45,6 +46,11 @@ class TimestampableBehavior extends Behavior
     protected function withCreatedAt(): bool
     {
         return !$this->booleanValue($this->getParameter('disable_created_at'));
+    }
+
+    protected function withHighPrecision(): bool
+    {
+        return $this->booleanValue($this->getParameter('enable_high_precision'));
     }
 
     /**
@@ -116,11 +122,12 @@ class TimestampableBehavior extends Behavior
     {
         if ($this->withUpdatedAt()) {
             $valueSource = strtoupper($this->getTable()->getColumn($this->getParameter('update_column'))->getType()) === 'INTEGER'
+             || !$this->withHighPrecision()
                 ? 'time()'
                 : '\\Propel\\Runtime\\Util\\PropelDateTime::createHighPrecision()'
             ;
             return "if (\$this->isModified() && !\$this->keepUpdateDateUnchanged && !\$this->isColumnModified(" . $this->getColumnConstant('update_column', $builder) . ")) {
-    \$this->" . $this->getColumnSetter('update_column') . "(${valueSource});
+    \$this->" . $this->getColumnSetter('update_column') . "({$valueSource});
 }";
         }
 
@@ -137,25 +144,27 @@ class TimestampableBehavior extends Behavior
     public function preInsert(AbstractOMBuilder $builder): string
     {
         $script = '$time = time();
-$highPrecision = \\Propel\\Runtime\\Util\\PropelDateTime::createHighPrecision();';
+' .  ($this->withHighPrecision() ? '$highPrecision = \\Propel\\Runtime\\Util\\PropelDateTime::createHighPrecision();' : '');
 
         if ($this->withCreatedAt()) {
             $valueSource = strtoupper($this->getTable()->getColumn($this->getParameter('create_column'))->getType()) === 'INTEGER'
+            || !$this->withHighPrecision()
                 ? '$time'
                 : '$highPrecision';
             $script .= "
 if (!\$this->isColumnModified(" . $this->getColumnConstant('create_column', $builder) . ")) {
-    \$this->" . $this->getColumnSetter('create_column') . "(${valueSource});
+    \$this->" . $this->getColumnSetter('create_column') . "($valueSource);
 }";
         }
 
         if ($this->withUpdatedAt()) {
             $valueSource = strtoupper($this->getTable()->getColumn($this->getParameter('update_column'))->getType()) === 'INTEGER'
+            || !$this->withHighPrecision()
                 ? '$time'
                 : '$highPrecision';
             $script .= "
 if (!\$this->isColumnModified(" . $this->getColumnConstant('update_column', $builder) . ")) {
-    \$this->" . $this->getColumnSetter('update_column') . "(${valueSource});
+    \$this->" . $this->getColumnSetter('update_column') . "($valueSource);
 }";
         }
 
