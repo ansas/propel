@@ -152,10 +152,10 @@
     /**
      * Code to be run after persisting or deleting the object in database
      * @param ConnectionInterface|null $con
-     * @param bool                     $affected
+     * @param bool|null                $affected
      * @return void
      */
-    public function postChange(?ConnectionInterface $con = null, bool $affected): void
+    public function postChange(?ConnectionInterface $con = null, ?bool $affected = null): void
     {
     <?php if ($hasBaseClass) : ?>
         if (is_callable('parent::postChange')) {
