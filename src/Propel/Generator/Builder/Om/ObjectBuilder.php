@@ -3603,12 +3603,12 @@ abstract class " . $this->getUnqualifiedClassName() . $parentClass . ' implement
             $script .= "
             if (\$ret) {
                 \$deleteQuery->delete(\$con);
-                \$this->postDelete(\$con);
-                \$this->postChange(\$con, true);";
+                \$this->postDelete(\$con);";
             // apply behaviors
             $this->applyBehaviorModifier('postDelete', $script, '                ');
             $script .= "
                 \$this->setDeleted(true);
+                \$this->postChange(\$con, true);
             }";
         } else {
             // apply behaviors
@@ -6887,11 +6887,11 @@ abstract class " . $this->getUnqualifiedClassName() . $parentClass . ' implement
             $this->applyBehaviorModifier('postUpdate', $script, '                    ');
             $script .= "
                 }
-                \$this->postSave(\$con);
-                \$this->postChange(\$con, \$affectedRows > 0);";
+                \$this->postSave(\$con);";
             $this->applyBehaviorModifier('postSave', $script, '                ');
             $script .= "
                 " . $this->getTableMapClassName() . "::addInstanceToPool(\$this);
+                \$this->postChange(\$con, \$affectedRows > 0);
             } else {
                 \$affectedRows = 0;
             }
