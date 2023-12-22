@@ -2473,6 +2473,15 @@ abstract class " . $this->getUnqualifiedClassName() . $parentClass . ' implement
     {
         $clo = $col->getLowercasedName();
 
+        $phpType = $col->getPhpType();
+        $scale   = $col->getScale();
+
+        $scaleMutator = "";
+        if ($scale !== null && in_array($phpType, ['double', 'float'])) {
+            $scaleMutator = "
+            \$v = round(\$v, " . $scale . ");";
+        }
+
         $this->addMutatorOpen($script, $col);
 
         // Perform type-casting to ensure that we can use type-sensitive
@@ -2480,7 +2489,7 @@ abstract class " . $this->getUnqualifiedClassName() . $parentClass . ' implement
         if ($col->isPhpPrimitiveType()) {
             $script .= "
         if (\$v !== null) {
-            \$v = (" . $col->getPhpType() . ") \$v;
+            \$v = (" . $phpType . ") \$v;" . $scaleMutator . "
         }
 ";
         }
