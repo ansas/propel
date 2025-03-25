@@ -4278,14 +4278,13 @@ abstract class " . $this->getUnqualifiedClassName() . $parentClass . ' implement
     /**
      * Get the associated $className object
      *
-     * @param ConnectionInterface \$con Optional Connection object.
      * @return {$className}{$orNull} $returnDesc
      * @throws \Propel\Runtime\Exception\PropelException
      */
-    public function get" . $this->getFKPhpNameAffix($fk, false) . "(?ConnectionInterface \$con = null)
+    public function get" . $this->getFKPhpNameAffix($fk, false) . "(?ConnectionInterface \$con = null, bool \$fetch = true)
     {";
         $script .= "
-        if (\$this->$varName === null && ($conditional)) {";
+        if (\$this->$varName === null && \$fetch && ($conditional)) {";
         if ($findPk) {
             $script .= "
             \$this->$varName = " . $this->getClassNameFromBuilder($fkQueryBuilder) . "::create()->findPk($localColumns, \$con);";
@@ -4979,7 +4978,7 @@ abstract class " . $this->getUnqualifiedClassName() . $parentClass . ' implement
     {
         \$this->$varName = \$v;
 
-        // Make sure that that the passed-in $className isn't already associated with this object
+        // Make sure that the passed-in $className isn't already associated with this object
         if (\$v !== null && \$v->get" . $this->getFKPhpNameAffix($refFK, false) . "(null, false) === null) {
             \$v->set" . $this->getFKPhpNameAffix($refFK, false) . "(\$this);
         }
